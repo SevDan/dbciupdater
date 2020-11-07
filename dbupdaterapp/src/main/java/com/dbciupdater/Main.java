@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 SevDan
+ * Copyright 2020 SevDan (Daniil Sevostyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,29 @@
 
 package com.dbciupdater;
 
+import com.dbciupdater.argsselector.Argument;
+import com.dbciupdater.argsselector.ArgumentsSelector;
+import com.dbciupdater.executor.ScriptExecutor;
+import com.dbciupdater.folderswalker.ScriptFinder;
+import com.dbciupdater.folderswalker.SqlUpdateScript;
+
+import java.util.List;
+
+import static java.lang.System.out;
+
 public class Main {
 
-    // java -jar app.jar -db postgresql -port 5432 -scripts /data/ -user root -password password
+    // java -jar app.jar -dbms postgresql -dbname database -port 5432 -scripts /data/ -user root -password password
     public static void main(String[] args) {
-        // read args
+        var selector = new ArgumentsSelector();
+        List<Argument> arguments = selector.selectArguments(args);
 
-        // execute scripts (one transaction per script) & register each script
+        var scriptsFinder = new ScriptFinder();
+        List<SqlUpdateScript> scripts = scriptsFinder.findScripts(arguments);
 
-        // return results
+        var scriptsExecutor = new ScriptExecutor();
+        int executedCount = scriptsExecutor.executeScripts(arguments, scripts);
+
+        out.println("Successfully executed " + executedCount + " scripts. Database updated!");
     }
 }

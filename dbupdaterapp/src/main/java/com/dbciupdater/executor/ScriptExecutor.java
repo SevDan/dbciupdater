@@ -33,7 +33,7 @@ public class ScriptExecutor {
     private String username;
     private String password;
 
-    public void executeScripts(List<Argument> arguments, List<SqlUpdateScript> sqlScripts) {
+    public int executeScripts(List<Argument> arguments, List<SqlUpdateScript> sqlScripts) {
         DbmsName dbmsName = extractDbmsName(arguments);
         String port = extractPort(arguments, dbmsName);
         String databaseName = extractDatabaseName(arguments);
@@ -50,6 +50,8 @@ public class ScriptExecutor {
         for (SqlUpdateScript sqlScript : actualScripts) {
             executeSingleScript(sqlScript);
         }
+
+        return actualScripts.size();
     }
 
     private List<SqlUpdateScript> actuateScripts(List<SqlUpdateScript> inputScripts) {
