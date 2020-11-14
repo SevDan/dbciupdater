@@ -26,18 +26,18 @@ import com.dbciupdater.folderswalker.ScriptsFinderBean;
 
 public class ApplicationFactoryImpl implements ApplicationFactory {
 
-    private static final ScriptsFinder scriptsFinderInst = new ScriptsFinderBean();
-    private static final ArgumentsParser parserInst = new ArgumentsParserBean();
+    private static final ScriptsFinder SCRIPTS_FINDER_INST = new ScriptsFinderBean();
+    private static final ArgumentsParser PARSER_INST = new ArgumentsParserBean();
     private static final ScriptsExecutor SCRIPTS_EXECUTOR_INST = new ScriptsExecutorBean();
 
     @Override
     public ScriptsFinder getScriptsFinder() {
-        return scriptsFinderInst;
+        return SCRIPTS_FINDER_INST;
     }
 
     @Override
     public ArgumentsParser getArgumentsParser() {
-        return parserInst;
+        return PARSER_INST;
     }
 
     @Override
