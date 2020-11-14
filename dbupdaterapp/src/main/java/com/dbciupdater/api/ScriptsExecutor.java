@@ -14,23 +14,13 @@
  * limitations under the License.
  */
 
-package com.dbciupdater.executor;
+package com.dbciupdater.api;
 
-/**
- * Available databases (driver should be registered in build.gradle as dependency)
- */
-public enum DbmsName {
+import com.dbciupdater.argsselector.Argument;
+import com.dbciupdater.folderswalker.SingleTransactionSqlScript;
 
-    PostgreSQL("PostgreSQL"),
-    MySQL("MySQL");
+import java.util.List;
 
-    private final String name;
-
-    DbmsName(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
+public interface ScriptsExecutor {
+    int executeScripts(List<Argument> arguments, List<SingleTransactionSqlScript> sqlScripts);
 }

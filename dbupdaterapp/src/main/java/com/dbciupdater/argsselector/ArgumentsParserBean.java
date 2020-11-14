@@ -16,37 +16,39 @@
 
 package com.dbciupdater.argsselector;
 
+import com.dbciupdater.api.ArgumentsParser;
 import com.google.common.base.Strings;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ArgumentsSelector {
+public class ArgumentsParserBean implements ArgumentsParser {
 
-    public List<Argument> selectArguments(String[] inputArgs) {
+    @Override
+    public List<Argument> parseArguments(String[] inputArgs) {
         List<Argument> result = new ArrayList<>();
 
-        String currentArg = null;
+        String currentArgumentKey = null;
 
         for (String inputArgument : inputArgs) {
-            if (isKeySelection(currentArg)) {
-                currentArg = inputArgument;
+            if (isKeySelection(currentArgumentKey)) {
+                currentArgumentKey = inputArgument;
 
-                if (!Argument.AVAILABLE_ARGS.contains(currentArg)) {
+                if (!Argument.AVAILABLE_ARGS.contains(currentArgumentKey)) {
                     throw new IllegalArgumentException(String.format("Wrong argument %s", inputArgument));
                 }
             } else {
-                result.add(selectArgument(currentArg, inputArgument));
-                currentArg = null;
+                result.add(selectArgument(currentArgumentKey, inputArgument));
+                currentArgumentKey = null;
             }
         }
 
         return result;
     }
 
-    private Argument selectArgument(String argName, String argValue) {
+    private Argument selectArgument(String argKey, String argValue) {
         Argument argument = new Argument();
-        argument.setName(argName);
+        argument.setKey(argKey);
         argument.setValue(argValue);
         return argument;
     }

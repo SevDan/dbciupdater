@@ -16,8 +16,9 @@
 
 package com.dbciupdater.executor;
 
+import com.dbciupdater.api.ScriptsExecutor;
 import com.dbciupdater.argsselector.Argument;
-import com.dbciupdater.folderswalker.SqlUpdateScript;
+import com.dbciupdater.folderswalker.SingleTransactionSqlScript;
 
 import java.sql.*;
 import java.util.Comparator;
@@ -27,13 +28,14 @@ import java.util.stream.Collectors;
 import static java.lang.System.err;
 import static java.lang.System.out;
 
-public class ScriptExecutor {
+public class ScriptsExecutorBean implements ScriptsExecutor {
 
     private String url;
     private String username;
     private String password;
 
-    public int executeScripts(List<Argument> arguments, List<SqlUpdateScript> sqlScripts) {
+    @Override
+    public int executeScripts(List<Argument> arguments, List<SingleTransactionSqlScript> sqlScripts) {
         DbmsName dbmsName = extractDbmsName(arguments);
         String port = extractPort(arguments, dbmsName);
         String databaseName = extractDatabaseName(arguments);
@@ -45,19 +47,19 @@ public class ScriptExecutor {
         this.username = extractUsername(arguments);
         this.password = extractPassword(arguments);
 
-        List<SqlUpdateScript> actualScripts = actuateScripts(sqlScripts);
+        List<SingleTransactionSqlScript> actualScripts = actuateScripts(sqlScripts);
 
-        for (SqlUpdateScript sqlScript : actualScripts) {
+        for (SingleTransactionSqlScript sqlScript : actualScripts) {
             executeSingleScript(sqlScript);
         }
 
         return actualScripts.size();
     }
 
-    private List<SqlUpdateScript> actuateScripts(List<SqlUpdateScript> inputScripts) {
-        inputScripts.sort(Comparator.comparing(SqlUpdateScript::getFileName));
+    private List<SingleTransactionSqlScript> actuateScripts(List<SingleTransactionSqlScript> inputScripts) {
+        inputScripts.sort(Comparator.comparing(SingleTransactionSqlScript::getScriptFileName));
 
-        List<SqlUpdateScript> resultList;
+        List<SingleTransactionSqlScript> resultList;
         Connection conn = null;
         Statement stmt = null;
         try {
@@ -78,7 +80,7 @@ public class ScriptExecutor {
                     String lastScript = resultSet.getString("script_name");
 
                     resultList = inputScripts.stream()
-                            .filter(script -> script.getFileName().compareTo(lastScript) > 0)
+                            .filter(script -> script.getScriptFileName().compareTo(lastScript) > 0)
                             .collect(Collectors.toList());
                 } else {
                     resultList = inputScripts;
@@ -113,7 +115,7 @@ public class ScriptExecutor {
         stmt.executeUpdate(createLogQuery);
     }
 
-    private void executeSingleScript(SqlUpdateScript sqlScript) {
+    private void executeSingleScript(SingleTransactionSqlScript sqlScript) {
         Connection conn;
         try {
             conn = DriverManager.getConnection(url, username, password);
@@ -122,12 +124,12 @@ public class ScriptExecutor {
             try {
                 PreparedStatement preparedInsert = conn
                         .prepareStatement("INSERT INTO update_scripts_log (script_name) VALUES (?);");
-                preparedInsert.setString(1, sqlScript.getFileName());
+                preparedInsert.setString(1, sqlScript.getScriptFileName());
                 preparedInsert.executeUpdate();
 
                 stmt = conn.createStatement();
 
-                long updatedResult = stmt.executeLargeUpdate(sqlScript.getScript());
+                long updatedResult = stmt.executeLargeUpdate(sqlScript.getSqlScript());
                 out.printf("Updated %d entities\n", updatedResult);
                 conn.commit();
             } catch (SQLException e) {
@@ -175,7 +177,7 @@ public class ScriptExecutor {
 
     private String extractPassword(List<Argument> arguments) {
         for (Argument argument : arguments) {
-            if ("-password".equals(argument.getName())) {
+            if ("-password".equals(argument.getKey())) {
                 return argument.getValue();
             }
         }
@@ -185,7 +187,7 @@ public class ScriptExecutor {
 
     private String extractUsername(List<Argument> arguments) {
         for (Argument argument : arguments) {
-            if ("-user".equals(argument.getName())) {
+            if ("-user".equals(argument.getKey())) {
                 return argument.getValue();
             }
         }
@@ -207,7 +209,7 @@ public class ScriptExecutor {
 
     private String extractDatabaseName(List<Argument> arguments) {
         for (Argument argument : arguments) {
-            if ("-dbname".equals(argument.getName())) {
+            if ("-dbname".equals(argument.getKey())) {
                 return argument.getValue();
             }
         }
@@ -217,7 +219,7 @@ public class ScriptExecutor {
 
     private String extractPort(List<Argument> arguments, DbmsName dbmsName) {
         for (Argument argument : arguments) {
-            if ("-port".equals(argument.getName())) {
+            if ("-port".equals(argument.getKey())) {
                 return argument.getValue();
             }
         }
@@ -243,7 +245,7 @@ public class ScriptExecutor {
     private DbmsName extractDbmsName(List<Argument> arguments) {
         Argument dbArgument = null;
         for (Argument argument : arguments) {
-            if ("-dbms".equals(argument.getName())) {
+            if ("-dbms".equals(argument.getKey())) {
                 dbArgument = argument;
             }
         }

@@ -14,23 +14,19 @@
  * limitations under the License.
  */
 
-package com.dbciupdater.executor;
+package com.dbciupdater.api;
 
-/**
- * Available databases (driver should be registered in build.gradle as dependency)
- */
-public enum DbmsName {
+import com.dbciupdater.ApplicationFactoryImpl;
 
-    PostgreSQL("PostgreSQL"),
-    MySQL("MySQL");
+public interface ApplicationFactory {
 
-    private final String name;
-
-    DbmsName(String name) {
-        this.name = name;
+    static ApplicationFactory getDefaultFactoryInstance() {
+        return new ApplicationFactoryImpl();
     }
 
-    public String getName() {
-        return name;
-    }
+    ScriptsFinder getScriptsFinder();
+
+    ArgumentsParser getArgumentsParser();
+
+    ScriptsExecutor getScriptsExecutor();
 }

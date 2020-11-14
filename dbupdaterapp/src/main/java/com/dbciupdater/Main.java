@@ -16,11 +16,9 @@
 
 package com.dbciupdater;
 
+import com.dbciupdater.api.ApplicationFactory;
 import com.dbciupdater.argsselector.Argument;
-import com.dbciupdater.argsselector.ArgumentsSelector;
-import com.dbciupdater.executor.ScriptExecutor;
-import com.dbciupdater.folderswalker.ScriptFinder;
-import com.dbciupdater.folderswalker.SqlUpdateScript;
+import com.dbciupdater.folderswalker.SingleTransactionSqlScript;
 
 import java.util.List;
 
@@ -28,15 +26,23 @@ import static java.lang.System.out;
 
 public class Main {
 
-    // java -jar app.jar -dbms postgresql -dbname database -port 5432 -scripts /data/ -user root -password password
+    // Usage:
+    // java -jar app.jar \
+    // -dbms postgresql  \
+    // -dbname database  \
+    // -port 5432        \
+    // -scripts /data/   \
+    // -user root        \
+    // -password password
     public static void main(String[] args) {
-        var selector = new ArgumentsSelector();
-        List<Argument> arguments = selector.selectArguments(args);
+        var app = ApplicationFactory.getDefaultFactoryInstance();
 
-        var scriptsFinder = new ScriptFinder();
-        List<SqlUpdateScript> scripts = scriptsFinder.findScripts(arguments);
+        var parser = app.getArgumentsParser();
+        var scriptsFinder = app.getScriptsFinder();
+        var scriptsExecutor = app.getScriptsExecutor();
 
-        var scriptsExecutor = new ScriptExecutor();
+        List<Argument> arguments = parser.parseArguments(args);
+        List<SingleTransactionSqlScript> scripts = scriptsFinder.findScripts(arguments);
         int executedCount = scriptsExecutor.executeScripts(arguments, scripts);
 
         out.println("Successfully executed " + executedCount + " scripts. Database updated!");

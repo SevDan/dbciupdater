@@ -16,6 +16,7 @@
 
 package com.dbciupdater.folderswalker;
 
+import com.dbciupdater.api.ScriptsFinder;
 import com.dbciupdater.argsselector.Argument;
 
 import java.io.IOException;
@@ -30,9 +31,10 @@ import java.util.stream.Stream;
 
 import static java.lang.System.err;
 
-public class ScriptFinder {
+public class ScriptsFinderBean implements ScriptsFinder {
 
-    public List<SqlUpdateScript> findScripts(List<Argument> arguments) {
+    @Override
+    public List<SingleTransactionSqlScript> findScripts(List<Argument> arguments) {
         String scriptsFolderPath = extractScriptsFolderPath(arguments);
 
         Path folderPath = Paths.get(scriptsFolderPath);
@@ -46,7 +48,7 @@ public class ScriptFinder {
             }
         }
 
-        List<SqlUpdateScript> result = new ArrayList<>();
+        List<SingleTransactionSqlScript> result = new ArrayList<>();
 
         try {
             Stream<Path> walk = Files.walk(folderPath, 1);
@@ -66,7 +68,7 @@ public class ScriptFinder {
                     continue;
                 }
 
-                SqlUpdateScript script = buildScript(filePath, fileName);
+                SingleTransactionSqlScript script = buildScript(filePath, fileName);
 
                 result.add(script);
             }
@@ -75,24 +77,24 @@ public class ScriptFinder {
             throw new RuntimeException(e);
         }
 
-        result.sort(Comparator.comparing(SqlUpdateScript::getFileName));
+        result.sort(Comparator.comparing(SingleTransactionSqlScript::getScriptFileName));
 
         return result;
     }
 
-    private SqlUpdateScript buildScript(Path filePath, String fileName) throws IOException {
+    private SingleTransactionSqlScript buildScript(Path filePath, String fileName) throws IOException {
         List<String> scriptLines = Files.readAllLines(filePath);
         String resultScript = String.join(" ", scriptLines);
 
-        SqlUpdateScript script = new SqlUpdateScript();
-        script.setFileName(fileName);
-        script.setScript(resultScript);
+        SingleTransactionSqlScript script = new SingleTransactionSqlScript();
+        script.setScriptFileName(fileName);
+        script.setSqlScript(resultScript);
         return script;
     }
 
     private String extractScriptsFolderPath(List<Argument> arguments) {
         for (Argument argument : arguments) {
-            if ("-scripts".equals(argument.getName())) {
+            if ("-scripts".equals(argument.getKey())) {
                 return argument.getValue();
             }
         }

@@ -21,6 +21,9 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Data object represents command line argument
+ */
 public class Argument implements Serializable {
 
     private static final long serialVersionUID = 7907292696098935858L;
@@ -29,24 +32,24 @@ public class Argument implements Serializable {
 
     static {
         AVAILABLE_ARGS.addAll(Arrays.asList(
-                "-dbms",
-                "-dbname",
-                "-port",
-                "-scripts",
-                "-user",
-                "-password"
+                "-dbms", // data base management system name
+                "-dbname", // data base name (in dbms)
+                "-port", // dbms port (database should be available on localhost)
+                "-scripts", // migration scripts folder
+                "-user", // auth username
+                "-password" // auth password
         ));
     }
 
-    private String name;
+    private String key;
     private String value;
 
-    public String getName() {
-        return name;
+    public String getKey() {
+        return key;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setKey(String key) {
+        this.key = key;
     }
 
     public String getValue() {

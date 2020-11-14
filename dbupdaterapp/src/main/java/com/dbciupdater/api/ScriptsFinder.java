@@ -14,26 +14,13 @@
  * limitations under the License.
  */
 
-package com.dbciupdater.folderswalker;
+package com.dbciupdater.api;
 
-public class SqlUpdateScript {
+import com.dbciupdater.argsselector.Argument;
+import com.dbciupdater.folderswalker.SingleTransactionSqlScript;
 
-    private String fileName;
-    private String script;
+import java.util.List;
 
-    public String getFileName() {
-        return fileName;
-    }
-
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
-    }
-
-    public String getScript() {
-        return script;
-    }
-
-    public void setScript(String script) {
-        this.script = script;
-    }
+public interface ScriptsFinder {
+    List<SingleTransactionSqlScript> findScripts(List<Argument> arguments);
 }
