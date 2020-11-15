@@ -32,4 +32,7 @@ graal {
     javaVersion '11'
     mainClass 'com.dbciupdater.Main'
     outputName 'dbciupdater'
+
+    option '--no-fallback'
+    option '--allow-incomplete-classpath'
 }
