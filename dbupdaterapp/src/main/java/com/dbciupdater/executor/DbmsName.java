@@ -22,7 +22,8 @@ package com.dbciupdater.executor;
 public enum DbmsName {
 
     PostgreSQL("PostgreSQL"),
-    MySQL("MySQL");
+    MySQL("MySQL"),
+    MariaDB("MariaDB");
 
     private final String name;
 

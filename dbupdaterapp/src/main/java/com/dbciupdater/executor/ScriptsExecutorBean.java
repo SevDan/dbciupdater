@@ -71,7 +71,7 @@ public class ScriptsExecutorBean implements ScriptsExecutor {
 
                 ResultSet resultSet = stmt.executeQuery(
                         "SELECT script_name " +
-                                "FROM update_scripts_log " +
+                                "FROM dbci_update_scripts_log " +
                                 "ORDER BY scriptName DESC " +
                                 "LIMIT 1"
                 );
@@ -111,19 +111,19 @@ public class ScriptsExecutorBean implements ScriptsExecutor {
 
     private void createLogIfNecessary(Statement stmt) throws SQLException {
         String createLogQuery =
-                "CREATE TABLE IF NOT EXISTS `update_scripts_log` (`script_name` VARCHAR(1024));";
+                "CREATE TABLE IF NOT EXISTS `dbci_update_scripts_log` (`script_name` VARCHAR(1024));";
         stmt.executeUpdate(createLogQuery);
     }
 
     private void executeSingleScript(SingleTransactionSqlScript sqlScript) {
-        Connection conn;
+        Connection conn = null;
+        Statement stmt = null;
         try {
             conn = DriverManager.getConnection(url, username, password);
-            Statement stmt = null;
 
             try {
                 PreparedStatement preparedInsert = conn
-                        .prepareStatement("INSERT INTO update_scripts_log (script_name) VALUES (?);");
+                        .prepareStatement("INSERT INTO dbci_update_scripts_log (script_name) VALUES (?);");
                 preparedInsert.setString(1, sqlScript.getScriptFileName());
                 preparedInsert.executeUpdate();
 
@@ -159,7 +159,7 @@ public class ScriptsExecutorBean implements ScriptsExecutor {
                 try {
                     Class.forName("org.postgresql.Driver");
                 } catch (ClassNotFoundException e) {
-                    err.println("Cannot connect to database. Cannot find jdbc driver:\n" + e.getMessage());
+                    err.println("Cannot connect to database. Cannot find PostgreSQL jdbc driver:\n" + e.getMessage());
                     System.exit(1);
                 }
             }
@@ -167,11 +167,19 @@ public class ScriptsExecutorBean implements ScriptsExecutor {
                 try {
                     Class.forName("com.mysql.jdbc.Driver");
                 } catch (ClassNotFoundException e) {
-                    err.println("Cannot connect to database. Cannot find jdbc driver:\n" + e.getMessage());
+                    err.println("Cannot connect to database. Cannot find MySQL jdbc driver:\n" + e.getMessage());
                     System.exit(1);
                 }
             }
-            default -> new RuntimeException("ScriptExecutor wasn't connected in jdbc driver");
+            case MariaDB -> {
+                try {
+                    Class.forName("org.mariadb.jdbc.Driver");
+                } catch (ClassNotFoundException e) {
+                    err.println("Cannot connect to database. Cannot find MariaDB jdbc driver:\n" + e.getMessage());
+                    System.exit(1);
+                }
+            }
+            default -> throw new RuntimeException("ScriptExecutor wasn't connected to jdbc driver");
         }
     }
 
@@ -203,7 +211,10 @@ public class ScriptsExecutorBean implements ScriptsExecutor {
             case MySQL -> {
                 return "mysql";
             }
-            default -> throw new RuntimeException("ScriptExecutor wasn't connected in jdbc driver");
+            case MariaDB -> {
+                return "mariadb";
+            }
+            default -> throw new RuntimeException("ScriptExecutor wasn't connected to jdbc driver");
         }
     }
 
@@ -225,7 +236,7 @@ public class ScriptsExecutorBean implements ScriptsExecutor {
         }
 
         return switch (dbmsName) {
-            case MySQL -> "3306";
+            case MySQL, MariaDB -> "3306";
             case PostgreSQL -> "5432";
         };
     }
@@ -255,11 +266,14 @@ public class ScriptsExecutorBean implements ScriptsExecutor {
         }
 
         switch (dbArgument.getValue().toLowerCase()) {
-            case "postgresql", "postgre", "pg": {
+            case "postgresql", "postgre", "postgres", "pg", "pgsql": {
                 return DbmsName.PostgreSQL;
             }
-            case "mysql": {
+            case "mysql", "my": {
                 return DbmsName.MySQL;
+            }
+            case "maria", "mariadb": {
+                return DbmsName.MariaDB;
             }
             default: {
                 throw new IllegalArgumentException("Unknown database name");
