@@ -155,7 +155,7 @@ public class ScriptsExecutorBean implements ScriptsExecutor {
 
     private void connectToJdbcDriver(DbmsName dbmsName) {
         switch (dbmsName) {
-            case PostgreSQL -> {
+            case PostgreSQL: {
                 try {
                     Class.forName("org.postgresql.Driver");
                 } catch (ClassNotFoundException e) {
@@ -163,7 +163,7 @@ public class ScriptsExecutorBean implements ScriptsExecutor {
                     System.exit(1);
                 }
             }
-            case MySQL -> {
+            case MySQL: {
                 try {
                     Class.forName("com.mysql.jdbc.Driver");
                 } catch (ClassNotFoundException e) {
@@ -171,7 +171,7 @@ public class ScriptsExecutorBean implements ScriptsExecutor {
                     System.exit(1);
                 }
             }
-            case MariaDB -> {
+            case MariaDB: {
                 try {
                     Class.forName("org.mariadb.jdbc.Driver");
                 } catch (ClassNotFoundException e) {
@@ -179,7 +179,8 @@ public class ScriptsExecutorBean implements ScriptsExecutor {
                     System.exit(1);
                 }
             }
-            default -> throw new RuntimeException("ScriptExecutor wasn't connected to jdbc driver");
+            default:
+                throw new RuntimeException("ScriptExecutor wasn't connected to jdbc driver");
         }
     }
 
@@ -205,16 +206,17 @@ public class ScriptsExecutorBean implements ScriptsExecutor {
 
     private String extractDatabaseName(DbmsName dbmsName) {
         switch (dbmsName) {
-            case PostgreSQL -> {
+            case PostgreSQL: {
                 return "postgresql";
             }
-            case MySQL -> {
+            case MySQL: {
                 return "mysql";
             }
-            case MariaDB -> {
+            case MariaDB: {
                 return "mariadb";
             }
-            default -> throw new RuntimeException("ScriptExecutor wasn't connected to jdbc driver");
+            default:
+                throw new RuntimeException("ScriptExecutor wasn't connected to jdbc driver");
         }
     }
 
@@ -235,10 +237,15 @@ public class ScriptsExecutorBean implements ScriptsExecutor {
             }
         }
 
-        return switch (dbmsName) {
-            case MySQL, MariaDB -> "3306";
-            case PostgreSQL -> "5432";
-        };
+        switch (dbmsName) {
+            case MySQL:
+            case MariaDB:
+                return "3306";
+            case PostgreSQL:
+                return "5432";
+            default:
+                return "3333";
+        }
     }
 
     private String buildDatabaseUrl(String databaseUrlPart, String port, String databaseName) {
@@ -266,13 +273,19 @@ public class ScriptsExecutorBean implements ScriptsExecutor {
         }
 
         switch (dbArgument.getValue().toLowerCase()) {
-            case "postgresql", "postgre", "postgres", "pg", "pgsql": {
+            case "postgresql":
+            case "postgre":
+            case "postgres":
+            case "pg":
+            case "pgsql": {
                 return DbmsName.PostgreSQL;
             }
-            case "mysql", "my": {
+            case "mysql":
+            case "my": {
                 return DbmsName.MySQL;
             }
-            case "maria", "mariadb": {
+            case "maria":
+            case "mariadb": {
                 return DbmsName.MariaDB;
             }
             default: {

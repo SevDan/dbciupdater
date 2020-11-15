@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'com.palantir.graal' version '0.7.2'
 }
 
 group 'com.dbciupdater'
@@ -11,7 +12,7 @@ jar {
     }
 }
 
-sourceCompatibility = 14
+sourceCompatibility = 11
 
 repositories {
     mavenCentral()
@@ -25,4 +26,10 @@ dependencies {
     compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.22'
     compile group: 'org.postgresql', name: 'postgresql', version: '42.1.4'
     compile group: 'org.mariadb.jdbc', name: 'mariadb-java-client', version: '1.1.7'
+}
+
+graal {
+    javaVersion '11'
+    mainClass 'com.dbciupdater.Main'
+    outputName 'dbciupdater'
 }
